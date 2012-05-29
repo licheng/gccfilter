@@ -383,12 +383,12 @@ sub parse_with_clause {
         # value
         my $v = '';
         for (;;){
-             last if $str eq '' || $str =~ /^,/;
+             last if $str eq '' || $str =~ /^[,;]/;
              $str =~ s/[\w\*&:]*(?:$RE{balanced}{-parens=>'<>{}()'})?\s?//;
              $v .= $&;
         }
         $data{$k} = $v;
-        $str =~ s/(?:, )?//;
+        $str =~ s/(?:[,;] )?//;
     }
     \%data;
 }
