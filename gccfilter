@@ -414,7 +414,7 @@ for (@output){
         $data{'line'} = $2 if defined $2;
         $data{'keyw'} = $3 if defined $3;
         my $rest = $4;
-        if ($rest =~ s/ \[with (.+)\]//) {
+        if ($rest =~ s/ \[with (.+?)\]//) {
             my $with = $1;
             $data{'templates'} = parse_with_clause ($with);
         }
