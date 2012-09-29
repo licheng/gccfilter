@@ -62,7 +62,7 @@ remove the path before source filenames (the path is replaced by C<...>).
 
 remove the template arguments between angle brackets.
 
-=item B<--replace-template-arguments>|B<-r>
+=item B<--replace-template-args>|B<-r>
 
 replace the template arguments with their values displayed in the with clause. 
 
@@ -81,7 +81,7 @@ list of namepaces to remove with the B<--remove-namespaces> option.
 
 =item B<--remove-instantiated-from>|B<-i>
 
-remove all the "instanciated from I<some-function>" lines. 
+remove all the "instantiated from I<some-function>" lines. 
 
 =back
 
@@ -228,9 +228,9 @@ my %color = (
 GetOptions (
     "colorize|c!"               => \$opt_colorize,
     "remove-path|p!"            => \$opt_remove_path,
-    "remove-instanciated-from|i!" => \$opt_remove_inst,
+    "remove-instantiated-from|i!" => \$opt_remove_inst,
     "remove-template-args|a!"   => \$opt_remove_template_args,
-    "replace-templates-args|r!" => \$opt_expand_templates,
+    "replace-template-args|r!" => \$opt_expand_templates,
     "hide-with-clause|w!"       => \$opt_hide_with,
     "remove-namespaces|n!"      => \$opt_remove_namespace,
     "namespaces|s=s"              => \@opt_namespaces,
@@ -238,7 +238,7 @@ GetOptions (
     "color-filename|cf=s"       => \$color{file},
     "color-linenum|cl=s"        => \$color{line},
     "color-code|cc=s"           => \$color{code},
-    "color-withclause|cw=s"     => \$color{withclause},
+    "color-withclause|cw=s"     => \$color{with},
     "color-error-keyw|cek=s"    => \$color{error_keyw},
     "color-error-mesg|cem=s"    => \$color{error_mesg},
     "color-warning-keyw|cwk=s"  => \$color{warning_keyw},
@@ -351,7 +351,7 @@ sub build_with {
     }
 }
 
-sub remove_instanciated {
+sub remove_instantiated {
     state $on = 0;
     if ($data{'mesg'} =~ /\s+instantiated from '/){
         if ($on) {
@@ -429,7 +429,7 @@ for (@output){
     remove_namespace ()       if $opt_remove_namespace;
     remove_path ()            if $opt_remove_path;
     build_with ()             unless $opt_hide_with;
-    remove_instanciated ()    if $opt_remove_inst;
+    remove_instantiated ()    if $opt_remove_inst;
     colorize ()               if $opt_colorize;
     
     my $str;
