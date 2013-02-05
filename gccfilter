@@ -200,6 +200,10 @@ use Getopt::ArgvFile (home=>1, current=>1);
 use Getopt::Long qw/:config pass_through require_order/;
 use Term::ANSIColor;
 
+use IO::Handle;
+STDERR->autoflush(1);
+STDOUT->autoflush(1);
+
 my (
     $opt_remove_template_args,
     $opt_remove_template_with,
@@ -393,10 +397,9 @@ sub parse_with_clause {
     \%data;
 }
 
-my @output = qx/LANG=C 2>&1 $command/;
+open (my $ps, "LANG=C 2>&1 $command |")  || die "Can't run command: $!";
 
-# main parser
-for (@output){
+while (<$ps>){
     # things like "In file included from ..."
     if (/^([\w\s]+from) ([^:]+):(\d+)(:|,)$/){
         %data = (
