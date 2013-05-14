@@ -10,16 +10,16 @@ gccfilter - A filter for gcc diagnostic messages.
 
 =head1 DESCRIPTION
 
-gccfilter is a filter to colorize and simplify (or expand) 
-gcc diagnostic messages. gccfilter is particularly aimed at g++ 
-(i.e. regarding C++) messages which can contain lot of 
+gccfilter is a filter to colorize and simplify (or expand)
+gcc diagnostic messages. gccfilter is particularly aimed at g++
+(i.e. regarding C++) messages which can contain lot of
 template-related errors or warnings difficult to understand.
 
 =head1 USAGE
 
-gccfilter takes as command line arguments, in that order, (1) gccfilter 
-specific options (documented in this page), followed by (2) a gcc command 
-(usally g++) with all it options and source files. 
+gccfilter takes as command line arguments, in that order, (1) gccfilter
+specific options (documented in this page), followed by (2) a gcc command
+(usally g++) with all it options and source files.
 
 =head1 EXAMPLE
 
@@ -37,7 +37,7 @@ To use in a Makefile, one can define the variable CXX as
 
 =head1 OPTIONS
 
-These are gccfilter specific options. These options can be stored in 
+These are gccfilter specific options. These options can be stored in
 a configuration file. See L</FILES>.
 
 =over
@@ -64,7 +64,7 @@ remove the template arguments between angle brackets.
 
 =item B<--replace-template-args>|B<-r>
 
-replace the template arguments with their values displayed in the with clause. 
+replace the template arguments with their values displayed in the with clause.
 
 =item B<--heide_with_clause>|B<-w>
 
@@ -72,7 +72,7 @@ do not display the with clause.
 
 =item B<--remove-namespaces>|B<-n>
 
-remove the namespaces specified by the B<--namespaces> option. 
+remove the namespaces specified by the B<--namespaces> option.
 If the B<--namespaces> option is not given, removes all namespaces.
 
 =item B<--namespaces>|B<-s> I<namespace-list>
@@ -81,18 +81,18 @@ list of namepaces to remove with the B<--remove-namespaces> option.
 
 =item B<--remove-instantiated-from>|B<-i>
 
-remove all the "instantiated from I<some-function>" lines. 
+remove all the "instantiated from I<some-function>" lines.
 
 =back
 
 =head2 Color options
 
-These options specify the colors for each element of the diagnostic message. 
+These options specify the colors for each element of the diagnostic message.
 The color specification I<color-spec> is a string of color attributes as defined
-in L<Term::ANSIColor(3perl)>. To sum up: foreground color attributes are black, 
-red, green, yellow, blue, magenta, cyan, and white. Background color attributes 
-are on_black, on_red, on_green, on_yellow, on_blue, on_magenta, on_cyan, 
-and on_white. Non-color attributes are clear (or reset), bold, dark (or faint), 
+in L<Term::ANSIColor(3perl)>. To sum up: foreground color attributes are black,
+red, green, yellow, blue, magenta, cyan, and white. Background color attributes
+are on_black, on_red, on_green, on_yellow, on_blue, on_magenta, on_cyan,
+and on_white. Non-color attributes are clear (or reset), bold, dark (or faint),
 underline (or underscore), blink, reverse, and concealed. Case is not significant.
 The options are:
 
@@ -120,9 +120,9 @@ The options are:
 
 =back
 
-Where keyw stands for keyword (C<error>, C<warning> or C<note>, depending on the type 
-of diagnostic) and mesg stands for message (the body of the diagnostic). Example of a 
-(flashy) colors specification: 
+Where keyw stands for keyword (C<error>, C<warning> or C<note>, depending on the type
+of diagnostic) and mesg stands for message (the body of the diagnostic). Example of a
+(flashy) colors specification:
 
     colorgcc -c --color-filename 'bold blink green on_red' g++ test.cpp
 
@@ -130,9 +130,9 @@ of diagnostic) and mesg stands for message (the body of the diagnostic). Example
 
 gccfilter uses L<Getopt::ArgvFile(3pm)> to allow the storage of commonly used options
 in configuration files. gccfilter searches for configuration files named F<.gccfilter>
-in the current working directory and then, if unsuccesfull in the home directory. The 
-format of the file is simple: it contains the options, as if thy were entered in the 
-command line (see L<Getopt::ArgvFile(3pm)>). 
+in the current working directory and then, if unsuccesfull in the home directory. The
+format of the file is simple: it contains the options, as if thy were entered in the
+command line (see L<Getopt::ArgvFile(3pm)>).
 
 =over
 
@@ -148,21 +148,21 @@ User's configuration file if the previous file does not exist.
 
 =head1 EXIT STATUS
 
-gccfilter exits with the status of the gcc command issued. 
+gccfilter exits with the status of the gcc command issued.
 
 =head1 LIMITATIONS
 
 gcc diagnostic messages are usually subject to localization. gccfilter does not
-handle that and invokes gcc in the "C" locale. 
+handle that and invokes gcc in the "C" locale.
 
 =head1 SEE ALSO
 
-gccfilter depends on the following perl modules: L<Term::ANSIColor(3perl)>, 
+gccfilter depends on the following perl modules: L<Term::ANSIColor(3perl)>,
 L<Getopt::ArgvFile(3pm)>, L<Getopt::Long(3perl)>, L<Regexp::Common(3pm)>.
 
 The idea of gccfilter commes from L<colorgcc(1)>, a tool to colorize gcc output,
 which seens to be unmaintained for years now. Yet the two programs do not share
-a single line of code. 
+a single line of code.
 
 =head1 AUTHOR
 
@@ -172,8 +172,8 @@ Emmanuel Le Trong, L<mailto:manu@mixtion.org>.
 
 Copyright 2010 by Emmanuel Le Trong.
 
-This is free software; see the source for copying conditions.  
-There is NO warranty; not even for MERCHANTABILITY or 
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.
 
 =cut
@@ -344,13 +344,13 @@ sub expand_templates {
 sub build_with {
     return unless defined $data{'templates'} && %{$data{'templates'}};
     if ($opt_colorize){
-        $data{'with'} = " with " . join ('; ', 
-            map { 
-                colored ($_, $color{with}) . " = " . 
-                colored ($data{'templates'}{$_}, $color{'with'}) 
+        $data{'with'} = " with " . join ('; ',
+            map {
+                colored ($_, $color{with}) . " = " .
+                colored ($data{'templates'}{$_}, $color{'with'})
             } keys %{$data{'templates'}});
     } else {
-        $data{'with'} = " with " . join ('; ', 
+        $data{'with'} = " with " . join ('; ',
             map { "$_ = $data{'templates'}{$_}" } keys %{$data{'templates'}});
     }
 }
@@ -370,7 +370,7 @@ sub remove_instantiated {
 }
 
 # 2009-12-24: value ($v) can be an empty string!
-# 2009-12-24: variadic template arguments : value of the last templ arg 
+# 2009-12-24: variadic template arguments : value of the last templ arg
 #             can be a comma-separated list !
 sub parse_with_clause {
     my $str = shift;
@@ -427,14 +427,14 @@ while (<$ps>){
         next;
     }
 
-    expand_templates ()       if $opt_expand_templates;  
+    expand_templates ()       if $opt_expand_templates;
     remove_template_arg ()    if $opt_remove_template_args;
     remove_namespace ()       if $opt_remove_namespace;
     remove_path ()            if $opt_remove_path;
     build_with ()             unless $opt_hide_with;
     remove_instantiated ()    if $opt_remove_inst;
     colorize ()               if $opt_colorize;
-    
+
     my $str;
     if ($data{'ordr'} == 1) {
         $str = "$data{'file'}:"   if $data{file};
