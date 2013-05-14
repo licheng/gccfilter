@@ -182,18 +182,22 @@ FITNESS FOR A PARTICULAR PURPOSE.
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use warnings;
 use strict;
 use feature 'state';
+use File::Basename;
+use IPC::Open3;
+
+BEGIN{ push @INC, dirname(__FILE__) };
 
 use Regexp::Common qw/balanced/;
 use Getopt::ArgvFile (home=>1, current=>1);
@@ -280,8 +284,6 @@ GetOptions (
     },
 );
 @opt_namespaces = split(/,/,join(',',@opt_namespaces));
-
-my $command = join ' ', @ARGV;
 
 my %data;
 
@@ -400,9 +402,15 @@ sub parse_with_clause {
     \%data;
 }
 
-open (my $ps, "LANG=C 2>&1 $command |")  || die "Can't run command: $!";
+$ENV{'LANG'} = 'C';
+local (*CHILD_IN, *CHILD_OUT, *CHILD_ERR);
+my $pid = open3(\*CHILD_IN, \*CHILD_OUT, \*CHILD_ERR, @ARGV);
+waitpid($pid, 0);
+my $gcc_exit_code = $? >> 8;
+my @gcc_stderr = <CHILD_ERR>;
 
-while (<$ps>){
+# main parser
+for (@gcc_stderr){
     # things like "In file included from ..."
     if (/^([\w\s]+from) ([^:]+):(\d+)(:|,)$/){
         %data = (
@@ -450,5 +458,5 @@ while (<$ps>){
     }
     print "$str\n" if $str;
 }
-exit ($? >> 8);
+exit($gcc_exit_code);
 
