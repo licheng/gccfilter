@@ -386,10 +386,13 @@ sub parse_with_clause {
         $last_key = $k;
         # value
         my $v = '';
-        for (;;){
-             last if $str eq '' || $str =~ /^[,;]/;
-             $str =~ s/[\w\*&:]*(?:$RE{balanced}{-parens=>'<>{}()'})?\s?//;
-             $v .= $&;
+        my $prev_str = '';
+        for (;;) {
+            last if $str eq '' || $str =~ /^[,;]/;
+            $str =~ s/[\w\*&:]*(?:$RE{balanced}{-parens=>'<>{}()'})?\s?//;
+            $v .= $&;
+            last if $str eq $prev_str; # str was immune to regexp, bail out
+            $prev_str = $str;
         }
         $data{$k} = $v;
         $str =~ s/(?:[,;] )?//;
