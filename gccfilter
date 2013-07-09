@@ -196,6 +196,8 @@ use strict;
 use feature 'state';
 use File::Basename;
 use IPC::Open3;
+use IO::Select;
+use Symbol;
 
 BEGIN{ push @INC, dirname(__FILE__) };
 
@@ -203,10 +205,6 @@ use Regexp::Common qw/balanced/;
 use Getopt::ArgvFile (home=>1, current=>1);
 use Getopt::Long qw/:config pass_through require_order/;
 use Term::ANSIColor;
-
-use IO::Handle;
-STDERR->autoflush(1);
-STDOUT->autoflush(1);
 
 my (
     $opt_remove_template_args,
@@ -403,11 +401,30 @@ sub parse_with_clause {
 }
 
 $ENV{'LANG'} = 'C';
-local (*CHILD_IN, *CHILD_OUT, *CHILD_ERR);
-my $pid = open3(\*CHILD_IN, \*CHILD_OUT, \*CHILD_ERR, @ARGV);
+# http://stackoverflow.com/questions/10029406/why-does-ipcopen3-get-deadlocked
+my @gcc_stdout;
+my @gcc_stderr;
+my $pid = open3(my $in, my $out, my $err = gensym(), @ARGV);
+my $sel = new IO::Select;
+$sel->add($out, $err);
+while (my @fhs = $sel->can_read) {
+    foreach my $fh (@fhs) {
+        my $line = <$fh>;
+        unless (defined $line) {
+            $sel->remove($fh);
+            next;
+        }
+        if ($fh == $out) {
+            push @gcc_stdout, $line;
+        } elsif ($fh == $err) {
+            push @gcc_stderr, $line;
+        } else {
+            die "[ERROR]: This should never execute!";
+        }
+    }
+}
 waitpid($pid, 0);
 my $gcc_exit_code = $? >> 8;
-my @gcc_stderr = <CHILD_ERR>;
 
 # main parser
 for (@gcc_stderr){
