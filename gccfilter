@@ -400,34 +400,39 @@ sub parse_with_clause {
     \%data;
 }
 
-$ENV{'LANG'} = 'C';
-# http://stackoverflow.com/questions/10029406/why-does-ipcopen3-get-deadlocked
-my @gcc_stdout;
-my @gcc_stderr;
-my $pid = open3(my $in, my $out, my $err = gensym(), @ARGV);
-my $sel = new IO::Select;
-$sel->add($out, $err);
-while (my @fhs = $sel->can_read) {
-    foreach my $fh (@fhs) {
-        my $line = <$fh>;
-        unless (defined $line) {
-            $sel->remove($fh);
-            next;
-        }
-        if ($fh == $out) {
-            push @gcc_stdout, $line;
-        } elsif ($fh == $err) {
-            push @gcc_stderr, $line;
-        } else {
-            die "[ERROR]: This should never execute!";
+sub execute_program {
+    my @args = @_;
+    $ENV{'LANG'} = 'C';
+    # http://stackoverflow.com/questions/10029406/why-does-ipcopen3-get-deadlocked
+    my @stdout;
+    my @stderr;
+    my $pid = open3(my $in, my $out, my $err = gensym(), @ARGV);
+    my $sel = new IO::Select;
+    $sel->add($out, $err);
+    while (my @fhs = $sel->can_read) {
+        foreach my $fh (@fhs) {
+            my $line = <$fh>;
+            unless (defined $line) {
+                $sel->remove($fh);
+                next;
+            }
+            if ($fh == $out) {
+                push @stdout, $line;
+            } elsif ($fh == $err) {
+                push @stderr, $line;
+            } else {
+                die "[ERROR]: This should never execute!";
+            }
         }
     }
+    waitpid($pid, 0);
+    return (\@stderr, $? >> 8);
 }
-waitpid($pid, 0);
-my $gcc_exit_code = $? >> 8;
+
+my ($gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
 
 # main parser
-for (@gcc_stderr){
+for (@$gcc_stderr_ref) {
     # things like "In file included from ..."
     if (/^([\w\s]+from) ([^:]+):(\d+)(:|,)$/){
         %data = (
