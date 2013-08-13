@@ -168,6 +168,14 @@ a single line of code.
 
 Emmanuel Le Trong, L<mailto:manu@mixtion.org>.
 
+=head1 CONTRIBUTORS
+
+Various GitHub users contributed to this project.
+This version of gccfilter was obtained from
+https://github.com/dichlofos/gccfilter
+
+Please do not hestiate to submit pull requests.
+
 =head1 COPYRIGHT
 
 Copyright 2010 by Emmanuel Le Trong.
@@ -426,10 +434,15 @@ sub execute_program {
         }
     }
     waitpid($pid, 0);
-    return (\@stderr, $? >> 8);
+    return (\@stdout, \@stderr, $? >> 8);
 }
 
-my ($gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
+my ($gcc_stdout_ref, $gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
+
+# print gcc stdout without any processing
+for (@$gcc_stdout_ref) {
+    print "$_";
+}
 
 # main parser
 for (@$gcc_stderr_ref) {
@@ -456,7 +469,7 @@ for (@$gcc_stderr_ref) {
         }
         $data{'mesg'} = $rest;
     } else {
-        print "$_";
+        print STDERR "$_";
         next;
     }
 
@@ -478,7 +491,7 @@ for (@$gcc_stderr_ref) {
     } elsif ($data{'ordr'} == 2) {
         $str = "$data{'mesg'} $data{'file'}:$data{line}$data{'eoli'}";
     }
-    print "$str\n" if $str;
+    print STDERR "$str\n" if $str;
 }
 exit($gcc_exit_code);
 
