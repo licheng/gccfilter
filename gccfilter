@@ -408,10 +408,13 @@ my $pid = open3(\*CHILD_IN, \*CHILD_OUT, \*CHILD_ERR, @ARGV);
 waitpid($pid, 0);
 my $gcc_exit_code = $? >> 8;
 my @gcc_stderr = <CHILD_ERR>;
+my @gcc_stdout = <CHILD_OUT>;
 if (! -t STDOUT)
 {
     $opt_colorize = 0;
 }
+
+print @gcc_stdout;
 
 # main parser
 for (@gcc_stderr){
