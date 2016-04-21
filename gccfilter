@@ -434,7 +434,7 @@ for (@gcc_stderr){
             eoli => $4,
             ordr => 2
         );
-    } elsif (/^([^:]+):(?:((?:\d+:)?\d+): )?(?:(error|warning|note): )?(.+)$/) {
+    } elsif (/^([^:]+):(?:((?:\d+:)?\d+): | )(?:(error|warning|note): )?(.+)$/) {
         %data = (
             ordr => 1,
             file => $1,
