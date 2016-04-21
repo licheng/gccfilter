@@ -5,7 +5,7 @@ Introduction
 ------------
 
 This version of gccfilter is a derived work from Emmanuel Le Trong's
-gccfilter project <http://www.mixtion.org/gccfilter>.
+[gccfilter project](http://www.mixtion.org/gccfilter).
 
 Description
 -----------
@@ -49,6 +49,4 @@ Usage
 Clone repo, grab `gccfilter` script and put it somewhere in your `$PATH`.
 
 The man page is integrated in the file (type `gccfilter -m`). An original
-man page is available in HTML here:
-<http://www.mixtion.org/gccfilter/gccfilter.html>, but it is
-slightly outdated.
+man page is [available in HTML](http://www.mixtion.org/gccfilter/gccfilter.html), but it is slightly outdated.
