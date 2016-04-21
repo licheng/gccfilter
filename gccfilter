@@ -444,12 +444,12 @@ sub execute_program {
     return (\@stdout, \@stderr, $? >> 8);
 }
 
-my ($gcc_stdout_ref, $gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
-
-if (@$gcc_stdout_ref -t STDOUT)
+if (! -t STDOUT)
 {
     $opt_colorize = 0;
 }
+
+my ($gcc_stdout_ref, $gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
 
 # print gcc stdout without any processing
 for (@$gcc_stdout_ref) {
