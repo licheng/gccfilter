@@ -177,6 +177,14 @@ a single line of code.
 
 Emmanuel Le Trong, L<mailto:manu@mixtion.org>.
 
+=head1 CONTRIBUTORS
+
+Various GitHub users contributed to this project.
+This version of gccfilter was obtained from
+https://github.com/dichlofos/gccfilter
+
+Please do not hestiate to submit pull requests.
+
 =head1 COPYRIGHT
 
 Copyright 2010 by Emmanuel Le Trong.
@@ -205,6 +213,8 @@ use strict;
 use feature 'state';
 use File::Basename;
 use IPC::Open3;
+use IO::Select;
+use Symbol;
 
 BEGIN{ push @INC, dirname(__FILE__) };
 
@@ -212,10 +222,6 @@ use Regexp::Common qw/balanced/;
 use Getopt::ArgvFile (home=>1, current=>1);
 use Getopt::Long qw/:config pass_through require_order/;
 use Term::ANSIColor;
-
-use IO::Handle;
-STDERR->autoflush(1);
-STDOUT->autoflush(1);
 
 my (
     $opt_remove_template_args,
@@ -427,22 +433,49 @@ sub parse_with_clause {
     \%data;
 }
 
-$ENV{'LANG'} = 'C';
-local (*CHILD_IN, *CHILD_OUT, *CHILD_ERR);
-my $pid = open3(\*CHILD_IN, \*CHILD_OUT, \*CHILD_ERR, @ARGV);
-waitpid($pid, 0);
-my $gcc_exit_code = $? >> 8;
-my @gcc_stderr = <CHILD_ERR>;
-my @gcc_stdout = <CHILD_OUT>;
+sub execute_program {
+    my @args = @_;
+    $ENV{'LANG'} = 'C';
+    # http://stackoverflow.com/questions/10029406/why-does-ipcopen3-get-deadlocked
+    my @stdout;
+    my @stderr;
+    my $pid = open3(my $in, my $out, my $err = gensym(), @ARGV);
+    my $sel = new IO::Select;
+    $sel->add($out, $err);
+    while (my @fhs = $sel->can_read) {
+        foreach my $fh (@fhs) {
+            my $line = <$fh>;
+            unless (defined $line) {
+                $sel->remove($fh);
+                next;
+            }
+            if ($fh == $out) {
+                push @stdout, $line;
+            } elsif ($fh == $err) {
+                push @stderr, $line;
+            } else {
+                die "[ERROR]: This should never execute!";
+            }
+        }
+    }
+    waitpid($pid, 0);
+    return (\@stdout, \@stderr, $? >> 8);
+}
+
 if (! -t STDOUT)
 {
     $opt_colorize = 0;
 }
 
-print @gcc_stdout;
+my ($gcc_stdout_ref, $gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
+
+# print gcc stdout without any processing
+for (@$gcc_stdout_ref) {
+    print "$_";
+}
 
 # main parser
-for (@gcc_stderr){
+for (@$gcc_stderr_ref) {
     # things like "In file included from ..."
     if (/^([\w\s]+from) ([^:]+):(\d+)(:|,)$/){
         %data = (
@@ -468,7 +501,7 @@ for (@gcc_stderr){
         }
         $data{'mesg'} = $rest;
     } else {
-        print "$_";
+        print STDERR "$_";
         next;
     }
 
@@ -491,7 +524,7 @@ for (@gcc_stderr){
     } elsif ($data{'ordr'} == 2) {
         $str = "$data{'mesg'} $data{'file'}:$data{line}$data{'eoli'}";
     }
-    print "$str\n" if $str;
+    print STDERR "$str\n" if $str;
 }
 exit($gcc_exit_code);
 
