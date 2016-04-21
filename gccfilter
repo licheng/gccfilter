@@ -54,6 +54,10 @@ display the man page.
 
 colorize output.
 
+=item B<--force-colorize>|B<-f>
+
+colorize output even if output is not a terminal.
+
 =item B<--remove-path>|B<-p>
 
 remove the path before source filenames (the path is replaced by C<...>).
@@ -220,6 +224,7 @@ my (
     $opt_remove_path,
     $opt_remove_namespace,
     $opt_colorize,
+    $opt_force_colorize,
     @opt_namespaces,
     $opt_expand_templates,
     $opt_hide_with,
@@ -241,6 +246,7 @@ my %color = (
 
 GetOptions (
     "colorize|c!"               => \$opt_colorize,
+    "force-colorize|f!"         => \$opt_force_colorize,
     "remove-path|p!"            => \$opt_remove_path,
     "remove-instantiated-from|i!" => \$opt_remove_inst,
     "remove-template-args|a!"   => \$opt_remove_template_args,
@@ -270,6 +276,7 @@ GetOptions (
             "  --help                   -h\n".
             "  --man                    -m (display man page)\n".
             "  --colorize               -c\n".
+            "  --force-colorize         -f\n".
             "  --remove-path            -p\n".
             "  --remove-template-args   -a\n".
             "  --replace-templates-args -r\n".
@@ -351,7 +358,7 @@ sub expand_templates {
 
 sub build_with {
     return unless defined $data{'templates'} && %{$data{'templates'}};
-    if ($opt_colorize){
+    if ($opt_colorize || $opt_force_colorize){
         $data{'with'} = " with " . join ('; ',
             map {
                 colored ($_, $color{with}) . " = " .
@@ -439,6 +446,11 @@ sub execute_program {
 
 my ($gcc_stdout_ref, $gcc_stderr_ref, $gcc_exit_code) = execute_program(@ARGV);
 
+if (@$gcc_stdout_ref -t STDOUT)
+{
+    $opt_colorize = 0;
+}
+
 # print gcc stdout without any processing
 for (@$gcc_stdout_ref) {
     print "$_";
@@ -479,7 +491,7 @@ for (@$gcc_stderr_ref) {
     remove_path ()            if $opt_remove_path;
     build_with ()             unless $opt_hide_with;
     remove_instantiated ()    if $opt_remove_inst;
-    colorize ()               if $opt_colorize;
+    colorize ()               if $opt_colorize || $opt_force_colorize;
 
     my $str;
     if ($data{'ordr'} == 1) {
