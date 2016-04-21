@@ -4,9 +4,8 @@ gccfilter
 Introduction
 ------------
 
-This version of gccfilter is obtained from https://github.com/dichlofos/gccfilter
-that is a derived work from Emmanuel Le Trong gccfilter project containing
-some bugfixes and improvements.
+This version of gccfilter is a derived work from Emmanuel Le Trong's
+gccfilter project <http://www.mixtion.org/gccfilter>.
 
 Description
 -----------
@@ -41,12 +40,15 @@ Note that the script relies on several perl modules, namely:
 So far it also requires perl version 5.9.4 or above (for the "state" keyword).
 If it's really a problem, let me know, i'll use a closure instead.
 
-Download the script: <http://www.mixtion.org/gccfilter/gccfilter>
-and put it somewhere in your $PATH.
-
-The man page is integrated in the file (type gccfilter -m),
-or available in HTML here: <http://www.mixtion.org/gccfilter/gccfilter.html>
-
 Author
 ------
 Emmanuel Le Trong, <manu@mixtion.org>
+
+Usage
+-----
+Clone repo, grab `gccfilter` script and put it somewhere in your `$PATH`.
+
+The man page is integrated in the file (type `gccfilter -m`). An original
+man page is available in HTML here:
+<http://www.mixtion.org/gccfilter/gccfilter.html>, but it is
+slightly outdated.
