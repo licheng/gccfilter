@@ -74,6 +74,11 @@ replace the template arguments with their values displayed in the with clause.
 
 do not display the with clause.
 
+=item B<--hide-custom> I<regex-list>
+
+remove all lines that match any regex in I<regex-list> in the ORIGINAL output.
+Be careful when escaping your regexes.
+
 =item B<--remove-namespaces>|B<-n>
 
 remove the namespaces specified by the B<--namespaces> option.
@@ -223,6 +228,7 @@ my (
     $opt_expand_templates,
     $opt_hide_with,
     $opt_remove_inst,
+    @hide_custom,
 );
 
 my %color = (
@@ -248,6 +254,8 @@ GetOptions (
     "hide-with-clause|w!"       => \$opt_hide_with,
     "remove-namespaces|n!"      => \$opt_remove_namespace,
     "namespaces|s=s"              => \@opt_namespaces,
+
+    'hide-custom|=s@{1,}'       => \@hide_custom,
 
     "color-filename|cf=s"       => \$color{file},
     "color-linenum|cl=s"        => \$color{line},
@@ -277,6 +285,7 @@ GetOptions (
             "  --hide-with-clause       -w\n".
             "  --remove-namespaces      -n\n".
             "  --namespaces             -s <name list>\n".
+            "  --hide-custom            <regex list>\n".
             "  --color-filename         -cf <color-spec>\n".
             "  --color-linenum          -cl <color-spec>\n".
             "  --color-code             -cc <color-spec>\n".
@@ -332,6 +341,15 @@ sub colorize {
 sub remove_template_arg {
     $data{'mesg'} =~ s/$RE{balanced}{-parens=>'<>'}/<>/g;
     map { s/$RE{balanced}{-parens=>'<>'}/<>/g } values %{$data{'templates'}};
+}
+
+sub remove_custom {
+    foreach my $regex (@hide_custom){
+        if($data{'orig'} =~ m/$regex/){
+            $data{'ordr'} = 0;
+            return;
+        }
+    }
 }
 
 sub remove_namespace {
@@ -428,6 +446,7 @@ for (@gcc_stderr){
     # things like "In file included from ..."
     if (/^([\w\s]+from) ([^:]+):(\d+)(:|,)$/){
         %data = (
+            orig => $_,
             mesg => $1,
             file => $2,
             line => $3,
@@ -436,6 +455,7 @@ for (@gcc_stderr){
         );
     } elsif (/^([^:]+):(?:((?:\d+:)?\d+): | )(?:(error|warning|note): )?(.+)$/) {
         %data = (
+            orig => $_,
             ordr => 1,
             file => $1,
         );
@@ -452,6 +472,7 @@ for (@gcc_stderr){
         next;
     }
 
+    remove_custom ()          if @hide_custom;
     expand_templates ()       if $opt_expand_templates;
     remove_template_arg ()    if $opt_remove_template_args;
     remove_namespace ()       if $opt_remove_namespace;
